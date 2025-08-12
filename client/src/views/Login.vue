@@ -40,12 +40,13 @@
 
 <script setup>
 import { ref } from "vue";
+import request from "../utils/request";
 
 const formRef = ref(null);
 const formData = ref({
-  account: "",
-  password: "",
-  checkCode: "",
+  account: "makabaka",
+  password: "123456",
+  checkCode: "1234",
   rememberMe: false
 });
 const rules = {
@@ -62,8 +63,14 @@ function refreshCheckCode() {
 function handleLogin() {
   formRef.value.validate(valid => {
     if (valid) {
-      // Perform login logic here
-      console.log("Login successful", formData.value);
+      request
+        .post("/api/login", formData.value)
+        .then(response => {
+          // TODO: 处理登录成功逻辑
+        })
+        .catch(error => {
+          refreshCheckCode();
+        });
     } else {
       console.log("Validation failed");
       return false;
