@@ -1,26 +1,45 @@
 import { NestFactory } from '@nestjs/core';
 import { RootModule } from './modules/root.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as session from 'express-session';
+import * as cookieParser from 'cookie-parser';
+
+import ResponseInterceptor from '@/common/response.interceptor';
+import AllExceptionFilter from './common/exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+
 
 async function bootstrap() {
-  const app = await NestFactory.create(RootModule);
+  const app = await NestFactory.create<NestExpressApplication>(RootModule);
 
+  app.setGlobalPrefix('api');
+  // app.enableCors({
+  //   origin: process.env.CORS_ORIGIN || '*', // 允许的跨域源
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //   credentials: true, // 允许携带cookie
+  //   allowedHeaders: 'Content-Type, Authorization',
+  // });
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  // app.useGlobalFilters(new AllExceptionFilter());
+  app.useStaticAssets('uploads', {
+    prefix: '/uploads/',
+  });
 
-  app.enableCors(true);
+  //配置cookie解析器
+  app.use(cookieParser());
 
+  //配置session
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: false,
+    saveUninitialized: false,
+  }));
 
-  configSwagger(app);
-
-  await app.listen(process.env.PORT ?? 3000);
-}
-
-
-function configSwagger(app) {
+  //配置Swagger
   const config = new DocumentBuilder()
     .setTitle("API Documentation")
     .setDescription("API documentation for the application")
     .setVersion("1.0")
-    .addTag("api")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -31,6 +50,8 @@ function configSwagger(app) {
       persistAuthorization: true,
     },
   });
+
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap();

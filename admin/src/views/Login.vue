@@ -24,11 +24,11 @@
                 <span class="iconfont icon-checkcode"></span>
               </template>
             </el-input>
-            <img class="check-code" :src="checkCodeUrl" alt="验证码" />
+            <img class="check-code" :src="checkCodeUrl" alt="验证码" @click="refreshCheckCode" />
           </div>
         </el-form-item>
         <el-form-item label="">
-          <el-checkbox v-model="formData.rememberMe" @click="refreshCheckCode">记住我</el-checkbox>
+          <el-checkbox v-model="formData.rememberMe">记住我</el-checkbox>
         </el-form-item>
         <el-form-item label="">
           <el-button type="primary" size="large" :style="{ width: '100%' }" @click="handleLogin">登录</el-button>
@@ -38,44 +38,56 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
-import request from "../utils/request";
+<script lang="ts" setup>
+import { ref, useTemplateRef } from "vue";
+import router from "@/router";
+import Notify from "@/utils/notify";
+import API from "@/apis";
 
-const formRef = ref(null);
+const formRef = useTemplateRef("formRef");
 const formData = ref({
   account: "makabaka",
   password: "123456",
   checkCode: "1234",
   rememberMe: false
 });
+
 const rules = {
   account: [{ required: true, message: "请输入账号", trigger: "blur" }],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
   checkCode: [{ required: true, message: "请输入验证码", trigger: "blur" }]
 };
-const checkCodeUrl = ref("api/checkCode?" + new Date().getTime());
+const checkCodeUrl = ref("api/check-code?" + new Date().getTime());
 
 function refreshCheckCode() {
-  checkCodeUrl.value = "api/checkCode?" + new Date().getTime();
+  console.log("Refreshing check code");
+  checkCodeUrl.value = "api/check-code?" + new Date().getTime();
 }
 
-function handleLogin() {
-  formRef.value.validate(valid => {
-    if (valid) {
-      request
-        .post("/api/login", formData.value)
-        .then(response => {
-          // TODO: 处理登录成功逻辑
-        })
-        .catch(error => {
-          refreshCheckCode();
-        });
-    } else {
-      console.log("Validation failed");
-      return false;
-    }
-  });
+async function handleLogin() {
+  try {
+    await formRef.value!.validate();
+
+    const result = await API.login({
+      account: formData.value.account,
+      password: formData.value.password,
+      checkCode: formData.value.checkCode.toLocaleLowerCase()
+    });
+
+    // if (formData.value.rememberMe) {
+    //   const encryptedPassword = CryptoJS.AES.encrypt(formData.value.password, "makabaka_blog").toString();
+    //   localStorage.setItem("account", formData.value.account);
+    //   localStorage.setItem("password", encryptedPassword);
+    // } else {
+    //   localStorage.removeItem("account");
+    //   localStorage.removeItem("password");
+    // }
+
+    Notify.showMessage("登录成功");
+    await router.replace("/");
+  } catch (error) {
+    refreshCheckCode();
+  }
 }
 </script>
 
@@ -88,14 +100,16 @@ function handleLogin() {
   background-image: url("@/assets/images/login-bg.jpg");
 
   .login-panel {
-    float: right;
     width: 350px;
-    margin-top: 150px;
-    margin-right: 100px;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 2px 2px 10px #ddd;
     background: #fff;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(-50%, -50%);
+
     .login-title {
       font-size: 20px;
       text-align: center;
@@ -103,7 +117,9 @@ function handleLogin() {
     }
     .check-code-panel {
       display: flex;
+      gap: 5px;
       .check-code {
+        cursor: pointer;
       }
     }
   }

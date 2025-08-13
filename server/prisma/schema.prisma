@@ -15,11 +15,47 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  account   String   @unique @db.VarChar(32)
   password  String   @db.VarChar(32)
-  email     String   @unique
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  blogs     Blog[]
+}
 
-  @@map("sys_user")
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(32)
+  cover       String?  @db.VarChar(255)
+  desc        String?  @db.VarChar(255)
+  type        Int      @default(1) // 1:文章分类 2:友链分类
+  sort        Int      @default(1)
+  firstBlogId Int? // 第一篇文章id
+  blogs       Blog[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Blog {
+  id           String   @id @default(uuid()) // 文章id
+  title        String   @db.VarChar(32) // 文章标题
+  desc         String?  @db.VarChar(255) // 文章描述
+  content      String   @db.Text // 文章内容
+  contentHtml  String   @db.Text // 文章内容html
+  cover        String?  @db.VarChar(255) // 文章封面
+  tags         String?  @db.VarChar(255) // 文章标签，
+  viewCount    Int      @default(0) // 文章浏览量
+  likeCount    Int      @default(0) // 文章点赞量
+  commentCount Int      @default(0) // 文章评论量
+  isComment    Boolean  @default(true) // 是否允许评论
+  isTop        Boolean  @default(false) // 是否置顶
+  isDraft      Boolean  @default(true) // 是否草稿
+  isPublic     Boolean  @default(true) // 是否公开
+  editType     Int      @default(1) @db.TinyInt // 编辑器类型 1:markdown 2:富文本
+  categoryId   Int
+  category     Category @relation(fields: [categoryId], references: [id])
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
