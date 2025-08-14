@@ -1,7 +1,7 @@
-import { BadRequestException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
-import * as jwt from 'jsonwebtoken';
+import * as jwt from "jsonwebtoken";
 
 @Injectable()
 export class UserService {
@@ -11,22 +11,25 @@ export class UserService {
     const user = await this.prismaService.user.findFirst({ where: { account } });
 
     if (!user) {
-      throw new BadRequestException('用户不存在');
+      throw new BadRequestException("用户不存在");
     }
 
     if (user.password !== password) {
-      throw new BadRequestException('密码错误');
+      throw new BadRequestException("密码错误");
     }
 
-
-    const token = jwt.sign({ id: user.id, account: user.account }, process.env.JWT_SECRET, { expiresIn: '3d' });
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET is not defined in the environment variables");
+    }
+    const token = jwt.sign({ id: user.id, account: user.account }, secret, { expiresIn: "3d" });
 
     return {
       token,
       admin: {
         id: user.id,
         account: user.account,
-        name: user.name,
+        name: user.name
       }
     };
   }
