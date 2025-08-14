@@ -8,25 +8,25 @@ export class UserService {
   @Inject() private readonly prismaService: PrismaService;
 
   async login(account: string, password: string) {
-    const admin = await this.prismaService.admin.findFirst({ where: { account } });
+    const user = await this.prismaService.user.findFirst({ where: { account } });
 
-    if (!admin) {
+    if (!user) {
       throw new BadRequestException('用户不存在');
     }
 
-    if (admin.password !== password) {
+    if (user.password !== password) {
       throw new BadRequestException('密码错误');
     }
 
 
-    const token = jwt.sign({ id: admin.id, account: admin.account }, process.env.JWT_SECRET, { expiresIn: '3d' });
+    const token = jwt.sign({ id: user.id, account: user.account }, process.env.JWT_SECRET, { expiresIn: '3d' });
 
     return {
       token,
       admin: {
-        id: admin.id,
-        account: admin.account,
-        name: admin.name,
+        id: user.id,
+        account: user.account,
+        name: user.name,
       }
     };
   }

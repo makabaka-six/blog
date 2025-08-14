@@ -20,9 +20,9 @@ async function bootstrap() {
   //   allowedHeaders: 'Content-Type, Authorization',
   // });
   app.useGlobalInterceptors(new ResponseInterceptor());
-  // app.useGlobalFilters(new AllExceptionFilter());
+  app.useGlobalFilters(new AllExceptionFilter());
   app.useStaticAssets('uploads', {
-    prefix: '/uploads/',
+    prefix: '/api/uploads/',
   });
 
   //配置cookie解析器

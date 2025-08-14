@@ -2,6 +2,8 @@ import { BadRequestException, ConflictException, Inject, Injectable } from '@nes
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { QueryCategoryDto } from './dto/query-category.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoryService {
@@ -19,18 +21,39 @@ export class CategoryService {
   }
 
   async remove(id: number) {
-    return true;
+    await this.prismaService.category.delete({ where: { id } });
   }
 
   async update(dto: UpdateCategoryDto) {
     return await this.prismaService.category.update({ data: dto, where: { id: dto.id } });
   }
 
-  async findAll() {
-    return await this.prismaService.category.findMany();
+  async findAll(dto: QueryCategoryDto) {
+    const { skip, take, id, name } = dto;
+    const where: Prisma.CategoryWhereInput = {
+      id: id ? +id : undefined,
+      name: name ? { contains: name } : undefined,
+    };
+
+    const total = await this.prismaService.category.count({ where });
+    const rows = await this.prismaService.category.findMany({
+      skip: +skip || 0,
+      take: +take || 10,
+      where,
+      orderBy: { id: 'desc' },
+    });
+    return { rows, total };
   }
 
   async findOne(id: number) {
     return await this.prismaService.category.findUnique({ where: { id } });
+  }
+
+  async findOptions() {
+    const results = await this.prismaService.category.findMany({ select: { id: true, name: true } });
+    return results.map(item => ({
+      label: item.name,
+      value: item.id,
+    }));
   }
 }

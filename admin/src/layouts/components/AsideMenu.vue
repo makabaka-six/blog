@@ -28,10 +28,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-// import store from "@/stores";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 
-const defaultActive = ref("/blog/list");
+const route = useRoute();
+
+const defaultActive = computed(() => route.path);
 const menus = [
   {
     title: "博客",

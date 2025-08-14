@@ -19,6 +19,14 @@ body,
   box-sizing: border-box;
 }
 
+/* 设置 md-editor-v3 代码块的 z-index */
+.mde-preview pre code {
+  z-index: 10;
+  /* 你可以根据需要调整这个值 */
+  position: relative;
+  /* z-index 通常需要配合 position 属性使用 */
+}
+
 
 ::-webkit-scrollbar {
   width: 8px;

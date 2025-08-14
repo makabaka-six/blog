@@ -7,11 +7,10 @@ export default class AllExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-
     Logger.error(`
       ${request.method} ${request.url} 
-      params:${JSON.stringify(request.params)} 
-      body:${JSON.stringify(request.body)} 
+      params:${JSON.stringify(request.params, null, 2)} 
+      body:${JSON.stringify(request.body, null, 2)} 
       message:${(exception as any).message}`, 'ExceptionFilter');
 
     if (exception instanceof HttpException) {

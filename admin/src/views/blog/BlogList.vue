@@ -4,6 +4,7 @@
       <span> 博客管理 </span>
     </template>
 
+    <!-- 搜索栏 -->
     <div class="search-bar">
       <div class="left-section">
         <div class="item">
@@ -32,22 +33,28 @@
       <el-button type="primary" @click="handleCreateBlog">新增博客</el-button>
     </div>
 
+    <!-- 表格 -->
     <el-table :data="tableData" size="large">
-      <el-table-column prop="date" label="封面" />
+      <el-table-column label="封面">
+        <template #default="{ row }">
+          <ImagePreview :src="row.cover" />
+        </template>
+      </el-table-column>
       <el-table-column prop="date" label="文章信息"> </el-table-column>
 
       <el-table-column prop="editType" label="编辑器" />
-
       <el-table-column prop="address" label="类型" />
       <el-table-column prop="address" label="允许评论" />
       <el-table-column prop="address" label="状态" />
       <el-table-column prop="address" label="时间" />
 
-      <el-table-column prop="actions" label="操作" width="180">
+      <el-table-column prop="actions" label="操作" width="240">
         <template #default="{ row }">
-          <el-button type="text" @click="handleEdit(row)">编辑</el-button>
-          <el-button type="text" @click="handleDelete(row)">删除</el-button>
-          <el-button type="text" @click="handlePreview(row)">预览</el-button>
+          <el-button-group>
+            <el-button type="primary" :icon="View" @click="handlePreview(row)" />
+            <el-button type="primary" :icon="Edit" @click="handleEdit(row)" />
+            <el-button type="danger" :icon="Delete" @click="handleDelete(row)" />
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
@@ -55,39 +62,50 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import API from "@/apis";
-import BlogEdit from "./BlogEdit.vue";
+import { onMounted, ref } from "vue";
 import router from "@/router";
+import API from "@/apis";
 
-// =================================== 表格数据 ===================================
+import ImagePreview from "@/components/ImagePreview.vue";
+import { Delete, Edit, View } from "@element-plus/icons-vue";
 
-interface FormDataType {
-  cover: string;
-  name: string;
-  desc: string;
-  blogCount: number;
-}
-const tableData = ref<FormDataType[]>([]);
-async function loadData() {}
+// =================================== 表格 ===================================
 
-function handleCreateBlog() {
+const tableData = ref([]);
+
+onMounted(async () => {
+  loadData();
+});
+
+const loadData = async () => {
+  const result = await API.getBlogList({
+    skip: (currentPage.value - 1) * pageSize.value,
+    take: pageSize.value
+  });
+
+  tableData.value = result.data.rows;
+  total.value = result.data.total;
+};
+
+const handleCreateBlog = () => {
   router.push("/blog/edit");
-}
-function handleEdit(row: FormDataType) {
-  console.log("Editing row:", row);
-}
+};
 
-function handleDelete(row: FormDataType) {
-  console.log("Deleting row:", row);
-}
+const handleEdit = async (row: any) => {
+  await router.push(`/blog/edit?id=${row.id}`);
+};
+const handleDelete = (row: any) => {};
+const handlePreview = (row: any) => {};
 
-function handlePreview(row: FormDataType) {
-  console.log("Deleting row:", row);
-}
+// ======================================= 分页 ========================================
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
 
-// =================================== 对话框 ===================================
-const dialogVisible = ref(true);
+  loadData();
+};
 </script>
 
 <style lang="scss" scoped>
@@ -101,6 +119,7 @@ const dialogVisible = ref(true);
     display: flex;
     align-items: center;
     gap: 8px;
+
     .item {
       display: flex;
       align-items: center;

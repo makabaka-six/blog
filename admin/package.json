@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "@kangc/v-md-editor": "^1.7.12",
     "@types/nprogress": "^0.2.3",
     "@vueuse/core": "^13.6.0",

@@ -4,7 +4,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 
 @ApiTags('基础服务')
-@Controller('')
+@Controller()
 export class BaseController {
   @Inject() private readonly baseService: BaseService;
 

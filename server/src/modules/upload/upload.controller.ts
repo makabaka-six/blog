@@ -9,7 +9,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) { }
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', {
+  @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: './uploads', // 图片存储的目录
       filename: (req, file, cb) => {
@@ -24,7 +24,7 @@ export class UploadController {
     return {
       message: '图片上传成功',
       filename: file.filename,
-      url: `http://localhost:3000/uploads/${file.filename}`
+      url: `/api/uploads/${file.filename}`
     };
   }
 }

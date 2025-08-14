@@ -3,6 +3,7 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { QueryCategoryDto } from './dto/query-category.dto';
 
 @ApiTags('分类管理')
 @Controller('category')
@@ -25,8 +26,13 @@ export class CategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(@Param() dto: QueryCategoryDto) {
+    return this.categoryService.findAll(dto);
+  }
+
+  @Get("options")
+  findOptions() {
+    return this.categoryService.findOptions();
   }
 
   @Get(':id')

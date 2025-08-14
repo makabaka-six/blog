@@ -9,7 +9,9 @@
 
     <el-main>
       <div class="content">
-        <router-view />
+        <keep-alive :max="3">
+          <router-view />
+        </keep-alive>
       </div>
     </el-main>
   </el-container>

@@ -3,6 +3,7 @@ import router from '@/router/index.ts';
 
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
+import 'virtual:windi.css';
 import "@/assets/css/global.css";
 import App from './App.vue';
 
